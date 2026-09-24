@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Goal Tracker</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --surface:#fafafa;
+      --surface-2:#f5f5f5;
+      --border:#e5e5e5;
+      --border-dark:#d2d2d2;
+      --text:#202020;
+      --muted:#777;
+      --soft:#999;
+      --black:#171717;
+      --white:#fff;
+      --danger:#444;
+      --radius:12px;
+      --shadow:0 1px 2px rgba(0,0,0,.04), 0 8px 28px rgba(0,0,0,.04);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size:14px;
+      line-height:1.45;
+    }
+    button,input{font:inherit}
+    button{cursor:pointer}
+
+    .app{min-height:100vh}
+    .topbar{
+      height:64px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 34px;
+      position:sticky;
+      top:0;
+      background:rgba(255,255,255,.94);
+      backdrop-filter:blur(12px);
+      z-index:10;
+    }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+    .brand-mark{
+      width:25px;height:25px;border:1.5px solid var(--black);
+      display:grid;place-items:center;border-radius:6px;font-size:12px;
+    }
+    .top-actions{display:flex;gap:8px}
+    .btn{
+      border:1px solid var(--border-dark);
+      background:var(--white);
+      color:var(--text);
+      border-radius:7px;
+      padding:8px 12px;
+      font-weight:600;
+      transition:.15s ease;
+    }
+    .btn:hover{background:var(--surface-2);border-color:#bbb}
+    .btn.primary{background:var(--black);color:#fff;border-color:var(--black)}
+    .btn.primary:hover{background:#303030}
+
+    .page{max-width:1240px;margin:0 auto;padding:44px 34px 70px}
+    .hero{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:34px}
+    .eyebrow{
+      color:var(--muted);font-size:12px;font-weight:700;
+      text-transform:uppercase;letter-spacing:.09em;margin-bottom:7px
+    }
+    h1{font-size:34px;line-height:1.1;margin:0 0 9px;letter-spacing:-.035em}
+    .subtitle{color:var(--muted);margin:0;max-width:640px}
+
+    .overview{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+      margin-bottom:36px;
+    }
+    .stat{
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:18px;
+      background:var(--surface);
+    }
+    .stat-label{color:var(--muted);font-size:12px;margin-bottom:7px}
+    .stat-value{font-size:25px;font-weight:750;letter-spacing:-.03em}
+    .stat-note{font-size:12px;color:var(--soft);margin-top:3px}
+
+    .section-head{
+      display:flex;justify-content:space-between;align-items:center;
+      margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--border);
+    }
+    .section-title{font-size:18px;font-weight:750;letter-spacing:-.02em}
+    .section-meta{font-size:12px;color:var(--muted)}
+
+    .projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .project{
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      background:#fff;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .project-head{padding:18px 18px 15px;border-bottom:1px solid var(--border)}
+    .project-title-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+    .project-name{font-size:17px;font-weight:750;letter-spacing:-.02em;margin:0 0 5px}
+    .project-due{font-size:12px;color:var(--muted)}
+    .project-actions{display:flex;gap:4px}
+    .icon-btn{
+      width:30px;height:30px;border:1px solid transparent;background:transparent;
+      border-radius:6px;color:#666;display:grid;place-items:center;
+    }
+    .icon-btn:hover{background:var(--surface-2);border-color:var(--border)}
+    .progress-row{display:flex;justify-content:space-between;align-items:center;margin-top:15px}
+    .progress-label{font-size:12px;color:var(--muted)}
+    .progress-percent{font-size:14px;font-weight:750}
+    .progress-track{height:7px;background:#ededed;border-radius:99px;overflow:hidden;margin-top:7px}
+    .progress-fill{height:100%;background:var(--black);border-radius:99px;transition:width .2s ease}
+
+    .tasks{padding:8px 18px 14px}
+    .task{
+      display:grid;
+      grid-template-columns:18px 1fr auto;
+      gap:10px;
+      align-items:center;
+      min-height:47px;
+      border-bottom:1px solid #f0f0f0;
+    }
+    .task:last-child{border-bottom:0}
+    .check{
+      width:17px;height:17px;border:1.5px solid #aaa;border-radius:5px;
+      display:grid;place-items:center;background:#fff;transition:.15s;
+    }
+    .check:hover{border-color:#555}
+    .check.done{background:var(--black);border-color:var(--black);color:#fff}
+    .check.done::after{content:"✓";font-size:11px;font-weight:800}
+    .task-title{font-size:13px}
+    .task-title.done{text-decoration:line-through;color:#999}
+    .task-due{font-size:11px;color:#999;white-space:nowrap}
+    .task-delete{
+      border:0;background:transparent;color:#aaa;padding:4px 0 4px 8px;
+      opacity:0;transition:.15s;
+    }
+    .task:hover .task-delete{opacity:1}
+    .add-task{
+      width:100%;border:0;background:transparent;text-align:left;
+      padding:10px 0 2px;color:#888;font-size:12px;
+    }
+    .add-task:hover{color:#222}
+
+    .empty{
+      grid-column:1/-1;
+      border:1px dashed var(--border-dark);
+      border-radius:var(--radius);
+      padding:52px 20px;text-align:center;color:var(--muted);
+    }
+
+    .modal-backdrop{
+      position:fixed;inset:0;background:rgba(0,0,0,.32);
+      display:none;align-items:center;justify-content:center;
+      padding:20px;z-index:30;
+    }
+    .modal-backdrop.show{display:flex}
+    .modal{
+      width:min(470px,100%);
+      background:#fff;border:1px solid #ddd;border-radius:12px;
+      box-shadow:0 20px 70px rgba(0,0,0,.18);
+      padding:22px;
+    }
+    .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .modal h2{margin:0;font-size:19px;letter-spacing:-.02em}
+    .close{border:0;background:transparent;font-size:22px;color:#777}
+    .field{margin-bottom:14px}
+    .field label{display:block;font-size:12px;font-weight:650;margin-bottom:6px}
+    .field input{
+      width:100%;height:40px;border:1px solid var(--border-dark);
+      border-radius:7px;padding:0 11px;outline:none;background:#fff;
+    }
+    .field input:focus{border-color:#777;box-shadow:0 0 0 3px #f1f1f1}
+    .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+
+    .toast{
+      position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);
+      background:#171717;color:#fff;padding:10px 14px;border-radius:7px;
+      font-size:12px;opacity:0;pointer-events:none;transition:.2s;z-index:50
+    }
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+
+    @media(max-width:850px){
+      .projects{grid-template-columns:1fr}
+      .overview{grid-template-columns:1fr}
+      .hero{align-items:flex-start;flex-direction:column}
+    }
+    @media(max-width:600px){
+      .topbar{padding:0 16px}
+      .page{padding:30px 16px 50px}
+      .hero h1{font-size:29px}
+      .brand span{display:none}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">N</div>
+      <span>Goal Tracker</span>
+    </div>
+    <div class="top-actions">
+      <button class="btn" id="resetBtn">Reset demo</button>
+      <button class="btn primary" id="newProjectBtn">+ New project</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Workspace</div>
+        <h1>Projects</h1>
+        <p class="subtitle">Keep your projects simple. Track what needs to be done, see your progress, and never lose sight of a deadline.</p>
+      </div>
+    </section>
+
+    <section class="overview">
+      <div class="stat">
+        <div class="stat-label">Active projects</div>
+        <div class="stat-value" id="statProjects">0</div>
+        <div class="stat-note">Projects currently being tracked</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Tasks completed</div>
+        <div class="stat-value" id="statTasks">0 / 0</div>
+        <div class="stat-note">Across all projects</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Overall progress</div>
+        <div class="stat-value" id="statProgress">0%</div>
+        <div class="stat-note">Based on completed tasks</div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div class="section-title">Your projects</div>
+        <div class="section-meta" id="projectCount">0 projects</div>
+      </div>
+      <div class="projects" id="projects"></div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="projectModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitle">New project</h2>
+      <button class="close" id="closeModal" aria-label="Close">×</button>
+    </div>
+    <form id="projectForm">
+      <input type="hidden" id="editProjectId" />
+      <div class="field">
+        <label for="projectName">Project name</label>
+        <input id="projectName" required placeholder="e.g. Portfolio redesign" />
+      </div>
+      <div class="field">
+        <label for="projectDue">Due date</label>
+        <input id="projectDue" type="date" />
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelModal">Cancel</button>
+        <button type="submit" class="btn primary">Save project</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="taskModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>New task</h2>
+      <button class="close" id="closeTaskModal" aria-label="Close">×</button>
+    </div>
+    <form id="taskForm">
+      <input type="hidden" id="taskProjectId" />
+      <div class="field">
+        <label for="taskName">Task title</label>
+        <input id="taskName" required placeholder="e.g. Finish homepage design" />
+      </div>
+      <div class="field">
+        <label for="taskDue">Task due date <span style="font-weight:400;color:#999">(optional)</span></label>
+        <input id="taskDue" type="date" />
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelTaskModal">Cancel</button>
+        <button type="submit" class="btn primary">Add task</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const STORAGE_KEY = "notion_goal_tracker_v1";
+
+  const demoData = [
+    {
+      id: crypto.randomUUID(),
+      name: "Portfolio Redesign",
+      due: "2026-10-10",
+      tasks: [
+        {id: crypto.randomUUID(), title:"Finalize case study structure", due:"2026-09-27", done:true},
+        {id: crypto.randomUUID(), title:"Design project overview", due:"2026-09-30", done:true},
+        {id: crypto.randomUUID(), title:"Create responsive screens", due:"2026-10-04", done:false},
+        {id: crypto.randomUUID(), title:"Publish portfolio", due:"2026-10-10", done:false}
+      ]
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Golden Box Website",
+      due: "2026-10-18",
+      tasks: [
+        {id: crypto.randomUUID(), title:"Finalize product catalogue", due:"2026-09-29", done:true},
+        {id: crypto.randomUUID(), title:"Build homepage", due:"2026-10-05", done:false},
+        {id: crypto.randomUUID(), title:"Add enquiry form", due:"2026-10-10", done:false},
+        {id: crypto.randomUUID(), title:"Test and launch", due:"2026-10-18", done:false}
+      ]
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "UI/UX Job Search",
+      due: "2026-10-31",
+      tasks: [
+        {id: crypto.randomUUID(), title:"Update resume", due:"2026-09-26", done:true},
+        {id: crypto.randomUUID(), title:"Apply to 5 companies", due:"2026-09-28", done:true},
+        {id: crypto.randomUUID(), title:"Improve LinkedIn profile", due:"2026-10-03", done:false},
+        {id: crypto.randomUUID(), title:"Prepare interview portfolio", due:"2026-10-12", done:false},
+        {id: crypto.randomUUID(), title:"Track applications", due:"2026-10-31", done:false}
+      ]
+    }
+  ];
+
+  let projects = loadData();
+
+  function loadData(){
+    try{
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : demoData;
+    }catch(e){ return demoData; }
+  }
+  function saveData(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+  }
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+  function formatDate(date){
+    if(!date) return "No due date";
+    const d = new Date(date + "T00:00:00");
+    return d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+  }
+  function projectProgress(project){
+    if(!project.tasks.length) return 0;
+    return Math.round(project.tasks.filter(t=>t.done).length / project.tasks.length * 100);
+  }
+  function isOverdue(date, done=false){
+    if(!date || done) return false;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    return new Date(date+"T00:00:00") < today;
+  }
+
+  function render(){
+    const container = document.getElementById("projects");
+    document.getElementById("projectCount").textContent =
+      `${projects.length} ${projects.length === 1 ? "project" : "projects"}`;
+
+    let totalTasks = 0, completed = 0;
+    projects.forEach(p => {
+      totalTasks += p.tasks.length;
+      completed += p.tasks.filter(t=>t.done).length;
+    });
+
+    document.getElementById("statProjects").textContent = projects.length;
+    document.getElementById("statTasks").textContent = `${completed} / ${totalTasks}`;
+    document.getElementById("statProgress").textContent =
+      totalTasks ? Math.round(completed/totalTasks*100) + "%" : "0%";
+
+    if(!projects.length){
+      container.innerHTML = `
+        <div class="empty">
+          <strong>No projects yet.</strong><br>
+          Create your first project to start tracking progress.
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = projects.map(project => {
+      const progress = projectProgress(project);
+      return `
+        <article class="project">
+          <div class="project-head">
+            <div class="project-title-row">
+              <div>
+                <div class="project-name">${escapeHtml(project.name)}</div>
+                <div class="project-due">Due ${formatDate(project.due)}</div>
+              </div>
+              <div class="project-actions">
+                <button class="icon-btn" title="Edit project" onclick="editProject('${project.id}')">✎</button>
+                <button class="icon-btn" title="Delete project" onclick="deleteProject('${project.id}')">×</button>
+              </div>
+            </div>
+            <div class="progress-row">
+              <span class="progress-label">Progress</span>
+              <span class="progress-percent">${progress}%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width:${progress}%"></div>
+            </div>
+          </div>
+          <div class="tasks">
+            ${project.tasks.length ? project.tasks.map(task => `
+              <div class="task">
+                <button class="check ${task.done ? "done" : ""}" onclick="toggleTask('${project.id}','${task.id}')" aria-label="Toggle task"></button>
+                <div>
+                  <div class="task-title ${task.done ? "done" : ""}">${escapeHtml(task.title)}</div>
+                  ${task.due ? `<div class="task-due ${isOverdue(task.due,task.done) ? "overdue":""}" style="${isOverdue(task.due,task.done) ? "color:#555;font-weight:600":""}">${isOverdue(task.due,task.done) ? "Overdue · " : ""}${formatDate(task.due)}</div>` : ""}
+                </div>
+                <button class="task-delete" onclick="deleteTask('${project.id}','${task.id}')" title="Delete task">×</button>
+              </div>
+            `).join("") : `<div style="padding:14px 0;color:#999;font-size:12px">No tasks yet.</div>`}
+            <button class="add-task" onclick="openTaskModal('${project.id}')">＋ Add task</button>
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  function openProjectModal(project=null){
+    document.getElementById("projectModal").classList.add("show");
+    document.getElementById("modalTitle").textContent = project ? "Edit project" : "New project";
+    document.getElementById("editProjectId").value = project?.id || "";
+    document.getElementById("projectName").value = project?.name || "";
+    document.getElementById("projectDue").value = project?.due || "";
+    setTimeout(()=>document.getElementById("projectName").focus(),50);
+  }
+  function closeProjectModal(){
+    document.getElementById("projectModal").classList.remove("show");
+    document.getElementById("projectForm").reset();
+  }
+  function editProject(id){
+    const project = projects.find(p=>p.id===id);
+    if(project) openProjectModal(project);
+  }
+  function deleteProject(id){
+    const p = projects.find(x=>x.id===id);
+    if(!p) return;
+    if(confirm(`Delete "${p.name}" and all its tasks?`)){
+      projects = projects.filter(x=>x.id!==id);
+      saveData(); render(); toast("Project deleted");
+    }
+  }
+  function toggleTask(projectId,taskId){
+    const p = projects.find(x=>x.id===projectId);
+    const t = p?.tasks.find(x=>x.id===taskId);
+    if(t){ t.done = !t.done; saveData(); render(); }
+  }
+  function deleteTask(projectId,taskId){
+    const p = projects.find(x=>x.id===projectId);
+    if(p){
+      p.tasks = p.tasks.filter(t=>t.id!==taskId);
+      saveData(); render();
+    }
+  }
+
+  function openTaskModal(projectId){
+    document.getElementById("taskProjectId").value = projectId;
+    document.getElementById("taskModal").classList.add("show");
+    document.getElementById("taskName").value = "";
+    document.getElementById("taskDue").value = "";
+    setTimeout(()=>document.getElementById("taskName").focus(),50);
+  }
+  function closeTaskModal(){
+    document.getElementById("taskModal").classList.remove("show");
+  }
+
+  function toast(message){
+    const el=document.getElementById("toast");
+    el.textContent=message;
+    el.classList.add("show");
+    clearTimeout(window.__toast);
+    window.__toast=setTimeout(()=>el.classList.remove("show"),1800);
+  }
+
+  document.getElementById("newProjectBtn").onclick=()=>openProjectModal();
+  document.getElementById("closeModal").onclick=closeProjectModal;
+  document.getElementById("cancelModal").onclick=closeProjectModal;
+  document.getElementById("closeTaskModal").onclick=closeTaskModal;
+  document.getElementById("cancelTaskModal").onclick=closeTaskModal;
+
+  document.getElementById("projectModal").addEventListener("click",e=>{
+    if(e.target===e.currentTarget) closeProjectModal();
+  });
+  document.getElementById("taskModal").addEventListener("click",e=>{
+    if(e.target===e.currentTarget) closeTaskModal();
+  });
+
+  document.getElementById("projectForm").addEventListener("submit",e=>{
+    e.preventDefault();
+    const id=document.getElementById("editProjectId").value;
+    const name=document.getElementById("projectName").value.trim();
+    const due=document.getElementById("projectDue").value;
+    if(!name) return;
+    if(id){
+      const p=projects.find(x=>x.id===id);
+      if(p){p.name=name;p.due=due;}
+      toast("Project updated");
+    }else{
+      projects.unshift({id:crypto.randomUUID(),name,due,tasks:[]});
+      toast("Project created");
+    }
+    saveData(); render(); closeProjectModal();
+  });
+
+  document.getElementById("taskForm").addEventListener("submit",e=>{
+    e.preventDefault();
+    const projectId=document.getElementById("taskProjectId").value;
+    const title=document.getElementById("taskName").value.trim();
+    const due=document.getElementById("taskDue").value;
+    const p=projects.find(x=>x.id===projectId);
+    if(!p || !title) return;
+    p.tasks.push({id:crypto.randomUUID(),title,due,done:false});
+    saveData(); render(); closeTaskModal(); toast("Task added");
+  });
+
+  document.getElementById("resetBtn").onclick=()=>{
+    if(confirm("Reset the workspace to the demo projects?")){
+      projects=JSON.parse(JSON.stringify(demoData));
+      saveData(); render(); toast("Demo data restored");
+    }
+  };
+
+  render();
+</script>
+</body>
+</html>
